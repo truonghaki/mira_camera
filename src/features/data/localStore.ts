@@ -1,0 +1,151 @@
+"use client";
+
+import { demoCameras, demoRentals } from "./demoData";
+import type { Camera, CameraFormInput, Rental, RentalFormInput, RentalWithCamera } from "@/types/domain";
+import { parseMoneyInput } from "@/lib/format/money";
+
+const CAMERAS_KEY = "mira-cameras";
+const RENTALS_KEY = "mira-rentals";
+
+function readJson<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.localStorage.getItem(key);
+  if (!stored) {
+    window.localStorage.setItem(key, JSON.stringify(fallback));
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(stored) as T;
+  } catch {
+    window.localStorage.setItem(key, JSON.stringify(fallback));
+    return fallback;
+  }
+}
+
+function writeJson<T>(key: string, value: T) {
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+function generateLocalId() {
+  if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+export function listCameras() {
+  return readJson<Camera[]>(CAMERAS_KEY, demoCameras);
+}
+
+export function listRentals() {
+  return readJson<Rental[]>(RENTALS_KEY, demoRentals);
+}
+
+export function joinRental(rental: Rental, cameras = listCameras()): RentalWithCamera {
+  return { ...rental, camera: cameras.find((camera) => camera.id === rental.camera_id) ?? null };
+}
+
+export function listRentalsWithCameras() {
+  const cameras = listCameras();
+  return listRentals().map((rental) => joinRental(rental, cameras)).sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+}
+
+export function getRental(id: string) {
+  const rental = listRentals().find((item) => item.id === id);
+  return rental ? joinRental(rental) : null;
+}
+
+export function getCamera(id: string) {
+  return listCameras().find((item) => item.id === id) ?? null;
+}
+
+export function saveCamera(input: CameraFormInput, id?: string) {
+  const now = new Date().toISOString();
+  const cameras = listCameras();
+  const clean = { name: input.name.trim(), status: input.status, note: input.note.trim() || null };
+
+  if (id) {
+    const updated = cameras.map((camera) => (camera.id === id ? { ...camera, ...clean, updated_at: now } : camera));
+    writeJson(CAMERAS_KEY, updated);
+    return updated.find((camera) => camera.id === id) ?? null;
+  }
+
+  const camera: Camera = { id: generateLocalId(), ...clean, created_at: now, updated_at: now };
+  writeJson(CAMERAS_KEY, [camera, ...cameras]);
+  return camera;
+}
+
+export function deleteOrDeactivateCamera(id: string) {
+  const rentals = listRentals();
+  const cameras = listCameras();
+  const hasHistory = rentals.some((rental) => rental.camera_id === id);
+
+  if (hasHistory) {
+    writeJson(CAMERAS_KEY, cameras.map((camera) => (camera.id === id ? { ...camera, status: "INACTIVE", updated_at: new Date().toISOString() } : camera)));
+    return "deactivated";
+  }
+
+  writeJson(CAMERAS_KEY, cameras.filter((camera) => camera.id !== id));
+  return "deleted";
+}
+
+export function validateRentalInput(input: RentalFormInput) {
+  const errors: string[] = [];
+  const start = new Date(input.start_time);
+  const end = new Date(input.end_time);
+  const price = parseMoneyInput(input.rental_price);
+
+  if (!input.customer_name.trim()) errors.push("Tên khách bắt buộc.");
+  if (!input.camera_id) errors.push("Máy ảnh bắt buộc.");
+  if (!input.start_time) errors.push("Ngày giờ nhận bắt buộc.");
+  if (!input.end_time) errors.push("Ngày giờ trả bắt buộc.");
+  if (input.start_time && input.end_time && end <= start) errors.push("Ngày giờ trả phải sau ngày giờ nhận.");
+  if (price < 0) errors.push("Tiền thuê không được âm.");
+  return errors;
+}
+
+export function findRentalOverlaps(input: RentalFormInput, ignoreId?: string) {
+  const newStart = new Date(input.start_time).getTime();
+  const newEnd = new Date(input.end_time).getTime();
+  return listRentalsWithCameras().filter((rental) => {
+    if (rental.id === ignoreId || rental.camera_id !== input.camera_id || rental.status === "CANCELLED") return false;
+    return newStart < new Date(rental.end_time).getTime() && newEnd > new Date(rental.start_time).getTime();
+  });
+}
+
+export function saveRental(input: RentalFormInput, id?: string) {
+  const now = new Date().toISOString();
+  const rentals = listRentals();
+  const payload = {
+    camera_id: input.camera_id,
+    customer_name: input.customer_name.trim(),
+    customer_phone: input.customer_phone.trim() || null,
+    customer_address: input.customer_address.trim() || null,
+    start_time: new Date(input.start_time).toISOString(),
+    end_time: new Date(input.end_time).toISOString(),
+    rental_price: parseMoneyInput(input.rental_price),
+    deposit_info: input.deposit_info.trim() || null,
+    status: input.status,
+    note: input.note.trim() || null,
+  };
+
+  if (id) {
+    const updated = rentals.map((rental) => (rental.id === id ? { ...rental, ...payload, updated_at: now } : rental));
+    writeJson(RENTALS_KEY, updated);
+    return updated.find((rental) => rental.id === id) ?? null;
+  }
+
+  const rental: Rental = { id: generateLocalId(), ...payload, created_at: now, updated_at: now };
+  writeJson(RENTALS_KEY, [rental, ...rentals]);
+  return rental;
+}
+
+export function updateRentalStatus(id: string, status: Rental["status"]) {
+  const now = new Date().toISOString();
+  writeJson(RENTALS_KEY, listRentals().map((rental) => (rental.id === id ? { ...rental, status, updated_at: now } : rental)));
+}
+
+export function deleteRental(id: string) {
+  writeJson(RENTALS_KEY, listRentals().filter((rental) => rental.id !== id));
+}
