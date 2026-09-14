@@ -1,0 +1,11 @@
+"use client";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { CalendarDays, Pencil } from "lucide-react";
+import { CameraStatusBadge, RentalStatusBadge } from "@/components/shared/StatusBadges";
+import { EmptyState } from "@/components/shared/States";
+import { getCamera, listRentalsWithCameras } from "@/features/data/localStore";
+import { formatDateTime } from "@/lib/format/date";
+
+export default function CameraDetailPage() { const params = useParams<{ id: string }>(); const camera = getCamera(params.id); if (!camera) return <EmptyState title="Không tìm thấy máy ảnh." />; const rentals = listRentalsWithCameras().filter((rental) => rental.camera_id === camera.id); return <><header className="mb-5 flex items-start justify-between gap-3"><div><p className="text-sm font-semibold text-pine-dark">Thiết bị</p><h1 className="mt-1 text-2xl font-bold text-ink">{camera.name}</h1><div className="mt-3"><CameraStatusBadge status={camera.status} /></div></div><Link href={`/cameras/${camera.id}/edit`} className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white text-pine-dark" aria-label="Sửa máy"><Pencil size={18} /></Link></header><section className="app-panel p-4"><h2 className="app-section-heading">Thông tin máy</h2><p className="mt-2 text-sm leading-6 text-[#7A6C76]">{camera.note ?? "Chưa có ghi chú cho máy này."}</p></section><section className="mt-5"><div className="mb-3 flex items-center justify-between"><h2 className="app-section-heading">Lịch thuê của máy</h2><span className="text-sm text-[#7A6C76]">{rentals.length} đơn</span></div>{rentals.length ? <div className="space-y-3">{rentals.map((rental) => <Link key={rental.id} href={`/rentals/${rental.id}`} className="app-card flex items-center gap-3 p-4"><CalendarDays size={18} className="shrink-0 text-pine-dark" /><div className="min-w-0 flex-1"><p className="truncate font-bold text-ink">{rental.customer_name}</p><p className="mt-1 truncate text-xs text-[#7A6C76]">{formatDateTime(rental.start_time)} → {formatDateTime(rental.end_time)}</p></div><RentalStatusBadge status={rental.status} /></Link>)}</div> : <EmptyState title="Máy này chưa có lịch thuê." />}</section></>; }
