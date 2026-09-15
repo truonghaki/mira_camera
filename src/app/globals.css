@@ -39,17 +39,21 @@ textarea.input { padding: 11px 13px; }
 .app-field-label { margin-bottom: 7px; display: block; font-size: 14px; font-weight: 600; color: #514650; }
 .app-empty { border: 1px dashed #ead7df; border-radius: 18px; background: rgba(255, 255, 255, 0.72); padding: 26px 16px; text-align: center; }
 .rental-card-premium { min-height: 156px; }
+.rental-timing { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; margin-top: 16px; border: 1px solid #F5E7EC; border-radius: 12px; background: #FFFBFD; padding: 10px 12px; }
+.rental-timing p { margin: 0 0 3px; color: #8A7B84; font-size: 11px; font-weight: 600; }
+.rental-timing strong { display: block; color: var(--text); font-size: 13px; line-height: 17px; }
+.rental-timing span { display: block; margin-top: 1px; color: #766D75; font-size: 12px; font-weight: 500; }
 
 .calendar-panel { overflow: hidden; }
 .calendar-month-control { display: inline-flex; height: 40px; width: 40px; align-items: center; justify-content: center; border-radius: 50%; color: var(--primary); transition: background-color 180ms ease, transform 180ms ease; }
 .calendar-month-control:hover { background: #fff0f5; }
 .calendar-month-control:active { transform: scale(0.9); }
-.calendar-cell { min-height: 62px; overflow: hidden; border: 1px solid transparent; border-radius: 12px; padding: 4px 2px; text-align: left; color: var(--text); transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease; }
+.calendar-cell { min-height: 58px; overflow: hidden; border: 1px solid transparent; border-radius: 12px; padding: 4px 2px; text-align: left; color: var(--text); transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease; }
+.calendar-cell-empty { min-height: 58px; }
 .calendar-cell:hover { background: #fff7fa; }
 .calendar-cell:active { transform: scale(0.97); }
 .calendar-cell-selected { border-color: #ecb7c9; background: #fff0f5; box-shadow: inset 0 0 0 1px rgba(216, 78, 127, 0.05); }
 .calendar-cell-today .calendar-day-number { color: var(--primary-strong); }
-.calendar-cell-muted { color: #c7bbc1; }
 .calendar-day-number { display: block; margin-bottom: 3px; text-align: center; font-size: 12px; font-weight: 650; line-height: 16px; }
 .calendar-bookings { display: block; space-y: 2px; }
 .calendar-booking { display: block; overflow: hidden; border-radius: 5px; padding: 2px 3px; text-overflow: ellipsis; white-space: nowrap; font-size: 8px; font-weight: 700; line-height: 11px; }
@@ -64,7 +68,8 @@ textarea.input { padding: 11px 13px; }
 @keyframes ios-sheet-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (min-width: 640px) {
-  .calendar-cell { min-height: 84px; border-radius: 14px; padding: 6px; }
+  .calendar-cell { min-height: 78px; border-radius: 14px; padding: 6px; }
+  .calendar-cell-empty { min-height: 78px; }
   .calendar-day-number { margin-bottom: 5px; font-size: 13px; line-height: 18px; }
   .calendar-booking { padding: 3px 5px; font-size: 11px; line-height: 14px; }
   .calendar-more { padding: 3px 5px 0; font-size: 11px; line-height: 14px; }
