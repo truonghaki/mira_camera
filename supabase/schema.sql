@@ -63,44 +63,31 @@ for each row execute function public.set_updated_at();
 alter table public.cameras enable row level security;
 alter table public.rentals enable row level security;
 
+drop policy if exists "Public can manage cameras" on public.cameras;
+drop policy if exists "Public can manage rentals" on public.rentals;
+drop policy if exists "Authenticated users can read cameras" on public.cameras;
+drop policy if exists "Authenticated users can insert cameras" on public.cameras;
+drop policy if exists "Authenticated users can update cameras" on public.cameras;
+drop policy if exists "Authenticated users can delete cameras" on public.cameras;
+drop policy if exists "Authenticated users can read rentals" on public.rentals;
+drop policy if exists "Authenticated users can insert rentals" on public.rentals;
+drop policy if exists "Authenticated users can update rentals" on public.rentals;
+drop policy if exists "Authenticated users can delete rentals" on public.rentals;
+
 create policy "Authenticated users can read cameras"
-on public.cameras for select
-to authenticated
-using (true);
-
+on public.cameras for select to authenticated using (true);
 create policy "Authenticated users can insert cameras"
-on public.cameras for insert
-to authenticated
-with check (true);
-
+on public.cameras for insert to authenticated with check (true);
 create policy "Authenticated users can update cameras"
-on public.cameras for update
-to authenticated
-using (true)
-with check (true);
-
+on public.cameras for update to authenticated using (true) with check (true);
 create policy "Authenticated users can delete cameras"
-on public.cameras for delete
-to authenticated
-using (true);
+on public.cameras for delete to authenticated using (true);
 
 create policy "Authenticated users can read rentals"
-on public.rentals for select
-to authenticated
-using (true);
-
+on public.rentals for select to authenticated using (true);
 create policy "Authenticated users can insert rentals"
-on public.rentals for insert
-to authenticated
-with check (true);
-
+on public.rentals for insert to authenticated with check (true);
 create policy "Authenticated users can update rentals"
-on public.rentals for update
-to authenticated
-using (true)
-with check (true);
-
+on public.rentals for update to authenticated using (true) with check (true);
 create policy "Authenticated users can delete rentals"
-on public.rentals for delete
-to authenticated
-using (true);
+on public.rentals for delete to authenticated using (true);
