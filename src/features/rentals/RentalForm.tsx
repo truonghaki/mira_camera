@@ -33,6 +33,7 @@ export function RentalForm({ rental }: { rental?: RentalWithCamera | null }) {
       const overlapItems = await findRentalOverlaps(input, rental?.id);
       if (overlapItems.length > 0) { setOverlaps(overlapItems); setErrors([`${overlapItems[0].camera?.name ?? "Máy ảnh"} đã có lịch thuê trong khoảng thời gian này.`]); return; }
       const saved = await saveRental(input, rental?.id);
+      await refresh();
       router.push(`/rentals/${saved.id}`); router.refresh();
     } catch (err) { setErrors([err instanceof Error ? err.message : "Không thể lưu đơn thuê. Vui lòng thử lại."]); } finally { setSaving(false); }
   }
