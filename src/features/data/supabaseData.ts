@@ -11,6 +11,12 @@ function normalizeRental(row: RentalWithCamera) {
   return { ...row, rental_price: Number(row.rental_price), camera: Array.isArray(row.camera) ? row.camera[0] ?? null : row.camera ?? null } as RentalWithCamera;
 }
 
+async function requireAuthenticatedSession() {
+  const { data, error } = await client().auth.getSession();
+  if (error) throw error;
+  if (!data.session) throw new Error("Phiên đăng nhập đã hết. Hãy đăng nhập lại rồi lưu đơn.");
+}
+
 function rentalPayload(input: RentalFormInput) {
   return {
     camera_id: input.camera_id,
@@ -115,6 +121,7 @@ async function syncCameraAvailability(cameraId: string) {
 
 export async function saveRental(input: RentalFormInput, id?: string) {
   const db = client();
+  await requireAuthenticatedSession();
   const previous = id ? await fetchRental(id) : null;
   const payload = rentalPayload(input);
   const query = id

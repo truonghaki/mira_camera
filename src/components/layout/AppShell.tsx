@@ -6,6 +6,7 @@ import { CalendarDays, Camera, History, LogOut, Plus, WalletCards } from "lucide
 import { useEffect, useState, type ReactNode } from "react";
 import { SupabaseDataProvider } from "@/features/data/SupabaseDataProvider";
 import { supabase } from "@/lib/supabase/client";
+import { ToastHost } from "@/components/shared/Toast";
 
 const desktopNavigation = [
   { href: "/calendar", label: "Lịch thuê", icon: CalendarDays },
@@ -53,6 +54,7 @@ function ShellContent({ children, pathname }: { children: ReactNode; pathname: s
     </aside>
     <main className="min-h-screen px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:ml-[244px] lg:px-9 lg:pb-9 lg:pt-8"><div className="mx-auto max-w-[1180px]">{children}</div></main>
     <MobileBottomNav pathname={pathname} />
+    <ToastHost />
   </div>;
 }
 
